@@ -1,0 +1,62 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  // id          Int             @id @default(autoincrement())
+  id             String          @id @default(uuid())
+  name           String?
+  age            Int
+  email          String
+  role           Role            @default(BASIC)
+  preferences    Json
+  blob           Unsupported("")
+  writtenPosts   Post[]          @relation("WrittenPosts")
+  favouritePosts Post[]          @relation("FavouritePosts")
+  userPreference UserPreference?
+
+  @@unique([age, name])
+  @@index([email])
+}
+
+model UserPreference {
+  id           String  @id @default(uuid())
+  emailUpdates Boolean
+  user         User    @relation(fields: [userId], references: [id])
+  userId       String  @unique
+}
+
+model Post {
+  id            String     @id @default(uuid())
+  title         String
+  rating        Float
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  author        User       @relation("WrittenPosts", fields: [userId], references: [id])
+  userId        String
+  favouriteBy   User?      @relation("FavouritePosts", fields: [favouriteById], references: [id])
+  favouriteById String?
+  category      Category[]
+}
+
+model Category {
+  id    String @id @default(uuid())
+  age   Int    @unique
+  posts Post[]
+}
+
+enum Role {
+  BASIC
+  ADMIN
+}
+
+// npx prisma migrate dev --name init
+//// npx prisma generate     -- it is used to generate the Prisma client initialiser
