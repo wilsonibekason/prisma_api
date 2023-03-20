@@ -3,6 +3,8 @@
  */
 
 /// Decorator Fctory
+import {performance} from "perf_hooks"
+import "reflect-metadata"
 type TDecorator<T> = (value: T) => (target: T) => void;
 function color(value: string) {
   return (target: string) => {};
@@ -73,4 +75,57 @@ function enumerable (value: boolean){
     return function (target:any, propertyKey: string, descriptor: PropertyDescriptor){
         descriptor.enumerable = value
     }
+}s
+
+// PROPERTY DEDORATOR
+
+function newreportableClassDecorator <T extends {new (...args: any[]): {}}>(constructor: T){
+    return class extends constructor{
+        __timing = []
+    }
+} 
+
+
+function timing() {
+    return function (target:any, propertyKey: string, descriptor: PropertyDescriptor){
+        const value = descriptor.value;
+        descriptor.value = async (...args: any[]) => {
+            const start = performance.now()
+            const output = await value.apply((this as string), args)
+            const end = performance.now()
+            if((this as {__timing: unknown[]}).__timing) {
+                (this as {__timing: unknown[]}).__timing.push({
+    method: propertyKey,
+    duration: end- start
+})
+            } else{}
+            console.log(end - start)
+            return output
+        }
+    }
 }
+
+
+const delay = <T>(time: number, data: T) => new Promise((resolve) => setTimeout(()=> {resolve(data)}, time))
+@newreportableClassDecorator
+class Users {
+    private __timings(__timings: any) {
+        throw new Error("Method not implemented.");
+    }
+    @timing()
+    async getUsers( ) {
+        return delay(2000, [])
+    }
+    @timing()
+    async getUser(id: number){
+        return delay(1000, {id: `user:${id}`})
+    }
+}
+(async function (){
+    const users = new Users()
+
+    await users.getUser(3)
+    await users.getUsers()
+    console.log(users.__timing)
+})()
+
