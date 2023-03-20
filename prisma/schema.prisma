@@ -14,17 +14,18 @@ model User {
   // id          Int             @id @default(autoincrement())
   id             String          @id @default(uuid())
   name           String?
-  age            Int
-  email          String
+  // age            Int
+  // email          String
   role           Role            @default(BASIC)
-  preferences    Json
-  blob           Unsupported("")
+  // preferences    Json
+  // blob           Unsupported("")
   writtenPosts   Post[]          @relation("WrittenPosts")
   favouritePosts Post[]          @relation("FavouritePosts")
   userPreference UserPreference?
+  // userPreferenceId String?
 
-  @@unique([age, name])
-  @@index([email])
+  // @@unique([age, name])
+  // @@index([email])
 }
 
 model UserPreference {
