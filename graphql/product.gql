@@ -1,0 +1,54 @@
+query {
+  products(categories: "electronice", limit: 10) {
+    name
+    desecription: des
+    reviews {
+      name
+      title
+      age
+      color
+      origin
+    }
+  }
+}
+
+query {
+  category(id: "123456789") {
+    id
+    name
+    subCategories {
+      id
+      name
+      products(limit: 10, sort: { field: "popularity", direction: "desc" }) {
+        id
+        name
+        price
+        availableQuantity
+        shippingInfo {
+          origin
+          deliveryTime {
+            min
+            max
+            unit
+          }
+        }
+        seller {
+          id
+          name
+          rating
+          feedbackCount
+        }
+        reviews(limit: 5) {
+          id
+          rating
+          comment
+          author {
+            id
+            name
+            country
+          }
+        }
+      }
+    }
+  }
+}

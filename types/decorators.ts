@@ -112,15 +112,13 @@ function configurable(value: boolean) {
 
 // PROPERTY DECORATORS
 
-
 const formatMetadataKey = Symbol("format");
-function format(formatString: string){
-    return Reflect.metadata(formatMetadataKey, formatString)
+function format(formatString: string) {
+  return Reflect.metadata(formatMetadataKey, formatString);
 }
-function getFormat(formatString: string, target: any){
-    return Reflect.getMetadata(formatMetadataKey, target, formatString)
+function getFormat(formatString: string, target: any) {
+  return Reflect.getMetadata(formatMetadataKey, target, formatString);
 }
-
 
 class Greeter {
   @format("hELLO, %S")
@@ -145,25 +143,45 @@ function enumerable(value: boolean) {
   };
 }
 
-
 // PROPERTY DEDORATOR
 
 const requiredMetadataKey = Symbol("required");
- 
-function required(target: Object, propertyKey: string | symbol, parameterIndex: number) {
-  let existingRequiredParameters: number[] = Reflect.getOwnMetadata(requiredMetadataKey, target, propertyKey) || [];
+
+function required(
+  target: Object,
+  propertyKey: string | symbol,
+  parameterIndex: number
+) {
+  let existingRequiredParameters: number[] =
+    Reflect.getOwnMetadata(requiredMetadataKey, target, propertyKey) || [];
   existingRequiredParameters.push(parameterIndex);
-  Reflect.defineMetadata( requiredMetadataKey, existingRequiredParameters, target, propertyKey);
+  Reflect.defineMetadata(
+    requiredMetadataKey,
+    existingRequiredParameters,
+    target,
+    propertyKey
+  );
 }
- 
-function validate(target: any, propertyName: string, descriptor: TypedPropertyDescriptor<Function>) {
+
+function validate(
+  target: any,
+  propertyName: string,
+  descriptor: TypedPropertyDescriptor<Function>
+) {
   let method = descriptor.value!;
- 
+
   descriptor.value = function () {
-    let requiredParameters: number[] = Reflect.getOwnMetadata(requiredMetadataKey, target, propertyName);
+    let requiredParameters: number[] = Reflect.getOwnMetadata(
+      requiredMetadataKey,
+      target,
+      propertyName
+    );
     if (requiredParameters) {
       for (let parameterIndex of requiredParameters) {
-        if (parameterIndex >= arguments.length || arguments[parameterIndex] === undefined) {
+        if (
+          parameterIndex >= arguments.length ||
+          arguments[parameterIndex] === undefined
+        ) {
           throw new Error("Missing required argument.");
         }
       }
@@ -172,10 +190,20 @@ function validate(target: any, propertyName: string, descriptor: TypedPropertyDe
   };
 }
 
-function important (target: Object, propertyKey: string | symbol, parameterIndex: number){
-    let existingRequiredParamter: number[] = Reflect.getOwnMetadata(requiredMetadataKey, target, propertyKey) || [];
-    existingRequiredParamter.push(parameterIndex)
-    Reflect.defineMetadata(requiredMetadataKey,existingRequiredParamter, target, propertyKey)
+function important(
+  target: Object,
+  propertyKey: string | symbol,
+  parameterIndex: number
+) {
+  let existingRequiredParamter: number[] =
+    Reflect.getOwnMetadata(requiredMetadataKey, target, propertyKey) || [];
+  existingRequiredParamter.push(parameterIndex);
+  Reflect.defineMetadata(
+    requiredMetadataKey,
+    existingRequiredParamter,
+    target,
+    propertyKey
+  );
 }
 
 function newreportableClassDecorator<T extends { new (...args: any[]): {} }>(
@@ -183,9 +211,9 @@ function newreportableClassDecorator<T extends { new (...args: any[]): {} }>(
 ) {
   return class extends constructor {
     __timing = [];
+    primeTimings = () => console.log(this.__timing);
   };
 }
-
 
 function timing() {
   return function (
@@ -224,11 +252,11 @@ class Users {
   }
   @timing()
   async getUsers() {
-    return delay( 2000, []);
+    return delay(2000, []);
   }
   @timing()
-  async getUser(id: number) {
-    return delay(1000, {@important id: `user:${id}` });
+  async getUser(@important id: number) {
+    return delay(1000, { id: `user:${id}` });
   }
 }
 (async function () {
@@ -238,3 +266,18 @@ class Users {
   await users.getUsers();
   console.log(users.__timing);
 })();
+// tsc --target ES5 --experimentalDecorators --emitDecoratorMetadata
+
+class Pointer {
+  constructor(public x: number, public y: number) {}
+}
+
+class Line {
+  private _start: Pointer;
+  private _end: Pointer;
+
+  @validate
+  set start(value: Pointer) {
+    this._start = value;
+  }
+}

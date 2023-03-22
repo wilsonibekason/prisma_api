@@ -1,5 +1,9 @@
-import express, { Express } from "express";
+import express, { Express, Request, Response } from "express";
 import { PrismaClient, Prisma } from "@prisma/client";
+import { graphqlHTTP, GraphQLParams } from "express-graphql";
+import { rootValue, schema } from "./graphql/gql";
+
+const app = express();
 
 const prisma = new PrismaClient({ log: ["query", "error", "warn", "info"] });
 
@@ -69,3 +73,14 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+app.use(
+  "/graphql",
+  graphqlHTTP({
+    schema,
+    rootValue,
+    graphiql: true,
+  })
+);
+app.listen(3000, () => {
+  console.log("Server is running on port 3000");
+});
