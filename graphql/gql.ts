@@ -29,6 +29,9 @@ interface TBooks {
   authorId: number;
   name: string;
 }
+const authors = [
+  { name: "wilson", bio: "i am programmmer from LablabAI", id: 1 },
+];
 const books: TBooks[] = [
   { id: 1, name: "Baasic Elelctronis", authorId: 1 },
   { id: 2, name: "Baasic Elelctronis", authorId: 2 },
@@ -38,6 +41,15 @@ const books: TBooks[] = [
   { id: 6, name: "Baasic Elelctronis", authorId: 6 },
   { id: 7, name: "Baasic Elelctronis", authorId: 7 },
 ];
+const AuthorType = new GraphQLObjectType({
+  name: "author",
+  description: "Specifies the Authors schema",
+  fields: () => ({
+    id: { type: new GraphQLNonNull(GraphQLInt) },
+    name: { type: new GraphQLNonNull(GraphQLString) },
+    bio: { type: GraphQLString },
+  }),
+});
 
 const BookType = new GraphQLObjectType({
   name: "Book",
@@ -47,6 +59,12 @@ const BookType = new GraphQLObjectType({
     desc: { type: GraphQLString },
     authorId: { type: new GraphQLNonNull(GraphQLInt) },
     name: { type: new GraphQLNonNull(GraphQLString) },
+    author: {
+      type: new GraphQLList(AuthorType),
+      resolve: (book) => {
+        return authors.find((author) => author.id === book.authorId);
+      },
+    },
   }),
 });
 
